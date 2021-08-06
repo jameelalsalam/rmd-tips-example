@@ -1,0 +1,84 @@
+---
+title: "Penguin Tabs"
+author: "Jameel Alsalam"
+date: "8/6/2021"
+output: html_document
+knit: (function(inputFile, encoding) {
+  rmarkdown::render(inputFile, encoding=encoding, output_dir = "output", output_file = "penguin-tabs-interactive.html") })
+---
+
+```{r setup, include=FALSE}
+knitr::opts_knit$set(root.dir = here::here())
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, warning = FALSE)
+
+library("tidyverse")
+library("palmerpenguins")
+
+```
+
+## R Markdown Tips
+
+This R markdown document demonstrates a few techniques that I've been using lately:
+
+  1) Putting alternate charts in HTML tabsets
+  2) Generating the individual plots according to a template in a separate Rmd child/template document
+  3) Keep my Rmd files in a /docs folder, but directing output to a /output folder
+  4) Making sure the Rmarkdown can be worked with interactively or via targets and both work the same
+
+
+```{r setupdata, include=FALSE}
+
+
+```
+
+
+A plot of all the data, drawn from the [example in palmerpenguins](https://allisonhorst.github.io/palmerpenguins/articles/examples.html):
+
+
+```{r plotall}
+flipper_bill <- penguins %>%
+  filter(species == "Gentoo") %>%
+  ggplot(aes(x = flipper_length_mm,
+             y = bill_length_mm)) +
+  geom_point(aes(color = species,
+                 shape = species),
+             size = 3,
+             alpha = 0.8) +
+  theme_minimal() +
+  scale_color_manual(values = c(
+                      "Adelie" = "darkorange", 
+                      "Chinstrap" = "purple", 
+                      "Gentoo" = "cyan4")) +
+  scale_shape_manual(values = c(
+                      "Adelie" = 16,
+                      "Chinstrap" = 17,
+                      "Gentoo" = 15)) +
+  labs(title = "Flipper and bill length",
+       subtitle = "Dimensions for Adelie, Chinstrap and Gentoo Penguins at Palmer Station LTER",
+       x = "Flipper length (mm)",
+       y = "Bill length (mm)",
+       color = "Penguin species",
+       shape = "Penguin species") +
+  theme(legend.position = c(0.85, 0.15),
+        legend.background = element_rect(fill = "white", color = NA),
+        plot.title.position = "plot",
+        plot.caption = element_text(hjust = 0, face= "italic"),
+        plot.caption.position = "plot")
+
+flipper_bill
+```
+
+
+```{r plottext, results='asis'}
+by_species_text <- map_chr(
+  c("Adelie", "Chinstrap", "Gentoo"),
+  ~knitr::knit_expand("docs/penguin-tabs-template.Rmd", pen_species = .x)
+)
+
+by_species_tabset_text <- c(
+  "## By Species {.tabset}",
+  by_species_text
+) %>% paste0(collapse = '\n\n\n')
+```
+
+`r withr::with_dir("output", knitr::knit(text = by_species_tabset_text))`
