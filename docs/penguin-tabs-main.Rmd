@@ -28,6 +28,8 @@ This R markdown document demonstrates a few techniques that I've been using late
 
 ```{r setupdata, include=FALSE}
 
+flipper_scale_range <- scales::expand_range(range(penguins$flipper_length_mm, na.rm = TRUE), mul = .05)
+bill_scale_range <- scales::expand_range(range(penguins$bill_length_mm, na.rm = TRUE), mul = .05)
 
 ```
 
@@ -37,7 +39,7 @@ A plot of all the data, drawn from the [example in palmerpenguins](https://allis
 
 ```{r plotall}
 flipper_bill <- penguins %>%
-  filter(species == "Gentoo") %>%
+  #filter(species == "Gentoo") %>%
   ggplot(aes(x = flipper_length_mm,
              y = bill_length_mm)) +
   geom_point(aes(color = species,
@@ -59,6 +61,10 @@ flipper_bill <- penguins %>%
        y = "Bill length (mm)",
        color = "Penguin species",
        shape = "Penguin species") +
+  coord_cartesian(
+    xlim = flipper_scale_range,
+    ylim = bill_scale_range
+  ) +
   theme(legend.position = c(0.85, 0.15),
         legend.background = element_rect(fill = "white", color = NA),
         plot.title.position = "plot",
